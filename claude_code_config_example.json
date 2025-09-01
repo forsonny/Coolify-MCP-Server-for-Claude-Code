@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "servers": {
+      "coolify": {
+        "command": "node",
+        "args": ["/path/to/coolify-mcp-server/dist/index.js"],
+        "env": {
+          "COOLIFY_BASE_URL": "http://your-coolify-instance:8000",
+          "COOLIFY_API_TOKEN": "your-api-token-here",
+          "COOLIFY_TIMEOUT": "30000"
+        }
+      }
+    }
+  }
+}
