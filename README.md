@@ -390,10 +390,10 @@ MIT — see [LICENSE](LICENSE).
 
 **Docs**
 
-* Coolify API Reference
-* MCP Quickstarts & SDKs
-* Claude Code MCP docs
-* Cursor MCP docs
+ * [Coolify API Reference](https://coolify.io/docs/api-reference/api/)
+ * [MCP SDK Documentation](https://github.com/modelcontextprotocol/sdk)
+ * [Claude Code Documentation](https://docs.anthropic.com/claude-code)
+ * [Cursor MCP Guide](https://cursor.sh/docs/mcp)
 
 **Version:** 1.0.0
 **Maintainer:** [@forsonny](https://github.com/forsonny)
