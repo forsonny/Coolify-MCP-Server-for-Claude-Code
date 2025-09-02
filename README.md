@@ -571,6 +571,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** 2024  
+**Version:** 1.0.0    
 **Maintainer:** [@forsonny](https://github.com/forsonny)
