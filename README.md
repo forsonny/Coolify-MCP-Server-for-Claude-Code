@@ -40,7 +40,7 @@ A Model Context Protocol (MCP) server that integrates with [Coolify](https://coo
 * **Private Keys** – List and create SSH private keys for server auth
 * **Env Vars** – CRUD for application/service environment variables
 
-> Note: Some aggregated operations (e.g., “resources by server”) are implemented by client-side filtering over the supported endpoints rather than a dedicated API path.
+> Note: Some aggregated operations (e.g., "resources by server") are implemented by client-side filtering over the supported endpoints rather than a dedicated API path.
 
 ---
 
@@ -96,19 +96,52 @@ COOLIFY_TIMEOUT=30000
 
 ### Claude Code Setup
 
-You can connect the server to **Claude Code** either via the CLI wizard or by importing from Claude Desktop.
+You can connect the server to **Claude Code** using the automated setup script or manually.
 
-**Option A — CLI wizard**
+**Option A — Automated Setup (Recommended)**
+
+The easiest way is to use the setup script:
 
 ```bash
-# Add this local MCP server to the current project
-claude mcp add coolify node /absolute/path/to/Coolify-MCP-Server-for-Claude-Code/dist/index.js
+# Run the setup script
+npm run setup
+```
 
-# Verify
+This will:
+- Validate your `.env` file configuration
+- Build the TypeScript project if needed
+- Generate the correct `claude mcp add-json` command with environment variables
+- Provide troubleshooting tips
+
+**Option B — Manual Setup**
+
+If you prefer to set it up manually, you have two approaches:
+
+**Method 1: With explicit environment variables (most reliable)**
+```bash
+claude mcp add-json coolify '{
+  "type": "stdio",
+  "command": "node", 
+  "args": ["/absolute/path/to/Coolify-MCP-Server-for-Claude-Code/dist/index.js"],
+  "env": {
+    "COOLIFY_BASE_URL": "https://your-coolify-instance.com",
+    "COOLIFY_API_TOKEN": "your-api-token-here",
+    "COOLIFY_TIMEOUT": "30000"
+  }
+}' -s local
+```
+
+**Method 2: Simple command (relies on .env file)**
+```bash
+claude mcp add coolify "node /absolute/path/to/Coolify-MCP-Server-for-Claude-Code/dist/index.js" -s local
+```
+
+**Verify the connection**
+```bash
 claude mcp list
 ```
 
-**Option B — Import from Claude Desktop**
+**Option C — Import from Claude Desktop**
 If you already have the server configured in Claude Desktop:
 
 ```bash
@@ -116,13 +149,15 @@ claude mcp add-from-claude-desktop
 claude mcp list
 ```
 
+> **Important:** Method 1 (explicit environment variables) is more reliable because it ensures environment variables are available to the MCP server process, regardless of the working directory from which Claude Code launches the server.
+
 > Tip: Some setups store Claude Code MCP config in `~/.claude.json`. The Desktop app uses `claude_desktop_config.json` under your OS application data directory.
 
 ### Cursor Setup
 
 **Cursor** supports MCP. The easiest route is through **Settings → Extensions → MCP Servers → Add Server**, then point to your built script (`node …/dist/index.js`) and add the three environment variables. Restart Cursor after saving.
 
-For advanced/enterprise setups, see Cursor’s MCP docs on programmatic registration.
+For advanced/enterprise setups, see Cursor's MCP docs on programmatic registration.
 
 ---
 
@@ -130,7 +165,7 @@ For advanced/enterprise setups, see Cursor’s MCP docs on programmatic registra
 
 1. Open your Coolify dashboard.
 2. Navigate to **Keys & Tokens → API tokens**.
-3. Create a new token (name it e.g. “MCP Server”), select the permissions you need, and optionally set an expiration.
+3. Create a new token (name it e.g. "MCP Server"), select the permissions you need, and optionally set an expiration.
 4. Copy the token **once** when shown and paste it into your `.env`.
 
 ---
@@ -202,7 +237,7 @@ Natural language you can try once connected:
 
 ```
 "List my applications"
-"Who’s in the current team?"
+"Who's in the current team?"
 "What version is my Coolify instance?"
 ```
 
@@ -238,6 +273,12 @@ npm run dev
 npm run build
 ```
 
+**Setup:**
+
+```bash
+npm run setup
+```
+
 **Clean:**
 
 ```bash
@@ -254,6 +295,7 @@ Coolify-MCP-Server-for-Claude-Code/
 │   └── types.ts           # Type definitions
 ├── dist/                  # Compiled JS (generated)
 ├── .env                   # Environment variables (create this)
+├── setup-mcp.js           # Setup script for easy configuration
 ├── package.json
 ├── tsconfig.json
 └── README.md              # This file
@@ -302,7 +344,7 @@ Coolify-MCP-Server-for-Claude-Code/
 
 ## Troubleshooting
 
-**Server won’t start**
+**Server won't start**
 
 * Confirm Node ≥ 18: `node --version`
 * Reinstall deps: `rm -rf node_modules && npm install`
@@ -326,6 +368,37 @@ Coolify-MCP-Server-for-Claude-Code/
 * Verify with `claude mcp list`
 * Check server logs in your terminal
 * Ensure environment variables are set for the MCP process
+
+**Environment variable issues**
+
+If you see `COOLIFY_BASE_URL and COOLIFY_API_TOKEN environment variables are required` errors:
+
+1. **Use the automated setup script:**
+   ```bash
+   npm run setup
+   ```
+
+2. **Or use explicit environment variables:**
+   Remove the existing MCP server and re-add with explicit env vars:
+   ```bash
+   claude mcp remove coolify -s local
+   claude mcp add-json coolify '{
+     "type": "stdio",
+     "command": "node",
+     "args": ["/absolute/path/to/your/dist/index.js"],
+     "env": {
+       "COOLIFY_BASE_URL": "https://your-coolify-instance.com",
+       "COOLIFY_API_TOKEN": "your-api-token-here"
+     }
+   }' -s local
+   ```
+
+3. **Verify your .env file exists and has proper values:**
+   ```bash
+   cat .env
+   ```
+
+> **Why this happens:** When MCP servers are launched by Claude Code, they may run from a different working directory, causing the `.env` file to not be found. Explicit environment variables in the MCP configuration solve this issue.
 
 **Debug mode**
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import { config } from 'dotenv';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -10,6 +13,12 @@ import {
 import { CoolifyClient } from './coolify-client.js';
 import { Config, ConfigSchema } from './types.js';
 import { z } from 'zod';
+
+// Load environment variables from .env file in the same directory as this script
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = dirname(__dirname); // Go up one level from dist to project root
+config({ path: join(projectRoot, '.env') });
 
 class CoolifyMCPServer {
   private server: Server;

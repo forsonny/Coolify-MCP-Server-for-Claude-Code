@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm test)",
+      "Bash(npm run:*)",
+      "Bash(claude config mcp list)",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp:*)",
+      "Bash(npm start)",
+      "Bash(dir:*)",
+      "Read(C:\\Users\\Sonny\\.claude/**)",
+      "Read(C:\\Users\\Sonny\\.claude/**)",
+      "Read(C:\\Users\\Sonny/**)",
+      "Read(C:\\Users\\Sonny/**)",
+      "Bash(cat:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
