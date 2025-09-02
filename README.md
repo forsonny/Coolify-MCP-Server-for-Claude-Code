@@ -100,11 +100,10 @@ You'll be prompted to add environment variables. Enter:
 
 #### Method 2: Manual Configuration
 
-Edit your Claude configuration file directly:
+Edit your Claude Code configuration file directly:
 
-**Windows:** `%LOCALAPPDATA%\Claude\claude_desktop_config.json`  
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`  
-**Linux:** `~/.config/Claude/claude_desktop_config.json`
+**Windows:** `%USERPROFILE%\.claude.json`  
+**macOS/Linux:** `~/.claude.json`
 
 Add the following to the `mcp.servers` section:
 
