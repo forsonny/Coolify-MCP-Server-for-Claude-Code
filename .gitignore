@@ -16,6 +16,9 @@ build/
 .env.test.local
 .env.production.local
 
+# Claude configuration (user-specific)
+CLAUDE.md
+
 # Test files (development only)
 test-*.js
 test-*.mjs
