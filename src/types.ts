@@ -63,6 +63,17 @@ export const PrivateKeySchema = z.object({
   created_at: z.string(),
 });
 
+export const EnvironmentVariableSchema = z.object({
+  uuid: z.string(),
+  key: z.string(),
+  value: z.string(),
+  is_build_time: z.boolean().optional(),
+  is_preview: z.boolean().optional(),
+  is_literal: z.boolean().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+});
+
 // API request/response types
 export type Team = z.infer<typeof TeamSchema>;
 export type Server = z.infer<typeof ServerSchema>;
@@ -70,6 +81,7 @@ export type Application = z.infer<typeof ApplicationSchema>;
 export type Service = z.infer<typeof ServiceSchema>;
 export type Deployment = z.infer<typeof DeploymentSchema>;
 export type PrivateKey = z.infer<typeof PrivateKeySchema>;
+export type EnvironmentVariable = z.infer<typeof EnvironmentVariableSchema>;
 
 // API Error schema
 export const ApiErrorSchema = z.object({

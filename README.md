@@ -110,7 +110,6 @@ Or manually add to your MCP configuration file:
 - `start_application` - Start an application
 - `stop_application` - Stop an application
 - `restart_application` - Restart an application
-- `execute_command_application` - Execute commands in application container
 
 ### Service Management
 - `list_services` - List all services
@@ -126,6 +125,34 @@ Or manually add to your MCP configuration file:
 ### SSH Key Management
 - `list_private_keys` - List stored private keys
 - `create_private_key` - Add a new private key
+
+### Environment Variable Management
+- `list_application_envs` - List environment variables for an application
+- `create_application_env` - Create a new application environment variable
+- `update_application_env` - Update an existing application environment variable
+- `bulk_update_application_envs` - Update multiple application environment variables
+- `delete_application_env` - Delete an application environment variable
+- `list_service_envs` - List environment variables for a service
+- `create_service_env` - Create a new service environment variable
+- `update_service_env` - Update an existing service environment variable
+- `bulk_update_service_envs` - Update multiple service environment variables
+- `delete_service_env` - Delete a service environment variable
+
+#### Build-Time vs Runtime Environment Variables
+
+Environment variables in Coolify can be configured with different flags:
+
+- **`is_build_time: true`**: Variables available during the build process
+  - ✅ **Applications**: Used during source code building (npm install, compile steps, etc.)
+  - ⚠️ **Services**: Accepted by API but has no functional effect (services use pre-built images)
+- **`is_preview: true`**: Variables specific to preview deployments
+- **`is_literal: true`**: Variables treated as literal strings without variable substitution
+
+**Important Notes:**
+- Services (Docker/Compose stacks) are pulled and run, not built from source
+- Applications are built from Git repositories and can use build-time variables
+- Setting `is_build_time: true` on services will be stored but ignored functionally
+- Both applications and services support runtime and preview environment variables
 
 ## Usage Examples
 

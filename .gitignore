@@ -47,3 +47,18 @@ coverage/
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Temporary files
+.tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# Editor backup files
+*~
+*.orig
+
+# Node.js specific
+.npm
+.eslintcache

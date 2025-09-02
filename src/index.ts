@@ -316,19 +316,6 @@ class CoolifyMCPServer {
               ],
             };
 
-          case 'execute_command_application':
-            const { uuid: execAppUuid, command } = z.object({ 
-              uuid: z.string(),
-              command: z.string(),
-            }).parse(args);
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: JSON.stringify(await coolify.executeCommandApplication(execAppUuid, command), null, 2),
-                },
-              ],
-            };
 
           case 'list_deployments':
             return {
@@ -372,6 +359,204 @@ class CoolifyMCPServer {
                 {
                   type: 'text',
                   text: JSON.stringify(await coolify.createPrivateKey(keyData), null, 2),
+                },
+              ],
+            };
+
+          // Application Environment Variables
+          case 'list_application_envs':
+            const { uuid: listAppEnvUuid } = z.object({ uuid: z.string() }).parse(args);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(await coolify.listApplicationEnvs(listAppEnvUuid), null, 2),
+                },
+              ],
+            };
+
+          case 'create_application_env':
+            const createAppEnvArgs = z.object({
+              uuid: z.string(),
+              key: z.string(),
+              value: z.string(),
+              is_build_time: z.boolean().optional(),
+              is_preview: z.boolean().optional(),
+              is_literal: z.boolean().optional(),
+            }).parse(args);
+            const { uuid: createAppEnvUuid, ...createAppEnvData } = createAppEnvArgs;
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(await coolify.createApplicationEnv(createAppEnvUuid, createAppEnvData), null, 2),
+                },
+              ],
+            };
+
+          case 'update_application_env':
+            const updateAppEnvArgs = z.object({
+              application_uuid: z.string(),
+              env_uuid: z.string(),
+              key: z.string().optional(),
+              value: z.string().optional(),
+              is_build_time: z.boolean().optional(),
+              is_preview: z.boolean().optional(),
+              is_literal: z.boolean().optional(),
+            }).parse(args);
+            const { application_uuid: updateAppUuid, env_uuid: updateEnvUuid, ...updateAppEnvData } = updateAppEnvArgs;
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(await coolify.updateApplicationEnv(updateAppUuid, { uuid: updateEnvUuid, ...updateAppEnvData }), null, 2),
+                },
+              ],
+            };
+
+          case 'bulk_update_application_envs':
+            const bulkUpdateAppArgs = z.object({
+              uuid: z.string(),
+              envs: z.array(z.object({
+                uuid: z.string().optional(),
+                key: z.string(),
+                value: z.string(),
+                is_build_time: z.boolean().optional(),
+                is_preview: z.boolean().optional(),
+                is_literal: z.boolean().optional(),
+              })),
+            }).parse(args);
+            const { uuid: bulkAppUuid, envs: bulkAppEnvs } = bulkUpdateAppArgs;
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(await coolify.bulkUpdateApplicationEnvs(bulkAppUuid, bulkAppEnvs), null, 2),
+                },
+              ],
+            };
+
+          case 'delete_application_env':
+            const { application_uuid: delAppUuid, env_uuid: delAppEnvUuid } = z.object({
+              application_uuid: z.string(),
+              env_uuid: z.string(),
+            }).parse(args);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(await coolify.deleteApplicationEnv(delAppUuid, delAppEnvUuid), null, 2),
+                },
+              ],
+            };
+
+          // Service Environment Variables
+          case 'list_service_envs':
+            const { uuid: listServiceEnvUuid } = z.object({ uuid: z.string() }).parse(args);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(await coolify.listServiceEnvs(listServiceEnvUuid), null, 2),
+                },
+              ],
+            };
+
+          case 'create_service_env':
+            const createServiceEnvArgs = z.object({
+              uuid: z.string(),
+              key: z.string(),
+              value: z.string(),
+              is_build_time: z.boolean().optional(),
+              is_preview: z.boolean().optional(),
+              is_literal: z.boolean().optional(),
+            }).parse(args);
+            const { uuid: createServiceEnvUuid, ...createServiceEnvData } = createServiceEnvArgs;
+            
+            // Warning for build-time variables on services
+            let createWarningMessage = '';
+            if (createServiceEnvData.is_build_time) {
+              createWarningMessage = '\n\n⚠️  WARNING: is_build_time=true has no functional effect on services. Services use pre-built images and do not have a build phase. This flag is only meaningful for applications that build from source code.';
+            }
+            
+            const createResult = await coolify.createServiceEnv(createServiceEnvUuid, createServiceEnvData);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(createResult, null, 2) + createWarningMessage,
+                },
+              ],
+            };
+
+          case 'update_service_env':
+            const updateServiceEnvArgs = z.object({
+              service_uuid: z.string(),
+              key: z.string(),
+              value: z.string(),
+              is_build_time: z.boolean().optional(),
+              is_preview: z.boolean().optional(),
+              is_literal: z.boolean().optional(),
+            }).parse(args);
+            const { service_uuid: updateServiceUuid, ...updateServiceEnvData } = updateServiceEnvArgs;
+            
+            // Warning for build-time variables on services
+            let updateWarningMessage = '';
+            if (updateServiceEnvData.is_build_time) {
+              updateWarningMessage = '\n\n⚠️  WARNING: is_build_time=true has no functional effect on services. Services use pre-built images and do not have a build phase. This flag is only meaningful for applications that build from source code.';
+            }
+            
+            const updateResult = await coolify.updateServiceEnv(updateServiceUuid, updateServiceEnvData);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(updateResult, null, 2) + updateWarningMessage,
+                },
+              ],
+            };
+
+          case 'bulk_update_service_envs':
+            const bulkUpdateServiceArgs = z.object({
+              uuid: z.string(),
+              data: z.array(z.object({
+                key: z.string(),
+                value: z.string(),
+                is_build_time: z.boolean().optional(),
+                is_preview: z.boolean().optional(),
+                is_literal: z.boolean().optional(),
+              })),
+            }).parse(args);
+            const { uuid: bulkServiceUuid, data: bulkServiceEnvs } = bulkUpdateServiceArgs;
+            
+            // Warning for build-time variables on services
+            let bulkWarningMessage = '';
+            const buildTimeVars = bulkServiceEnvs.filter(env => env.is_build_time);
+            if (buildTimeVars.length > 0) {
+              const varNames = buildTimeVars.map(env => env.key).join(', ');
+              bulkWarningMessage = `\n\n⚠️  WARNING: is_build_time=true has no functional effect on services. The following variables have this flag set but will be ignored: ${varNames}. Services use pre-built images and do not have a build phase. This flag is only meaningful for applications that build from source code.`;
+            }
+            
+            const bulkResult = await coolify.bulkUpdateServiceEnvs(bulkServiceUuid, bulkServiceEnvs);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(bulkResult, null, 2) + bulkWarningMessage,
+                },
+              ],
+            };
+
+          case 'delete_service_env':
+            const { service_uuid: delServiceUuid, env_uuid: delServiceEnvUuid } = z.object({
+              service_uuid: z.string(),
+              env_uuid: z.string(),
+            }).parse(args);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(await coolify.deleteServiceEnv(delServiceUuid, delServiceEnvUuid), null, 2),
                 },
               ],
             };
@@ -727,24 +912,6 @@ class CoolifyMCPServer {
         },
       },
       {
-        name: 'execute_command_application',
-        description: 'Execute a command inside a running application container. Useful for debugging, maintenance, or running one-off tasks. Note: This endpoint may not be available in all Coolify versions, including the current version (4.0.0-beta.397).',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            uuid: {
-              type: 'string',
-              description: 'UUID of the application where the command will be executed. Get this from list_applications.',
-            },
-            command: {
-              type: 'string',
-              description: 'The command to execute inside the container. This can be any valid shell command.',
-            },
-          },
-          required: ['uuid', 'command'],
-        },
-      },
-      {
         name: 'list_deployments',
         description: 'List all deployments across your Coolify instance. Deployments represent the history of application and service deployments.',
         inputSchema: {
@@ -796,6 +963,304 @@ class CoolifyMCPServer {
             },
           },
           required: ['name', 'private_key'],
+        },
+      },
+      // Application Environment Variables
+      {
+        name: 'list_application_envs',
+        description: 'List all environment variables for a specific application. Use this to view current environment configuration.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            uuid: {
+              type: 'string',
+              description: 'UUID of the application to list environment variables for. Get this from list_applications.',
+            },
+          },
+          required: ['uuid'],
+        },
+      },
+      {
+        name: 'create_application_env',
+        description: 'Create a new environment variable for an application. This adds a new key-value pair to the application\'s environment.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            uuid: {
+              type: 'string',
+              description: 'UUID of the application to add the environment variable to.',
+            },
+            key: {
+              type: 'string',
+              description: 'Environment variable name (e.g., "DATABASE_URL", "API_KEY").',
+            },
+            value: {
+              type: 'string',
+              description: 'Environment variable value.',
+            },
+            is_build_time: {
+              type: 'boolean',
+              description: 'Whether this variable should be available during build time.',
+            },
+            is_preview: {
+              type: 'boolean',
+              description: 'Whether this variable applies to preview deployments.',
+            },
+            is_literal: {
+              type: 'boolean',
+              description: 'Whether the value should be treated as a literal string without variable substitution.',
+            },
+          },
+          required: ['uuid', 'key', 'value'],
+        },
+      },
+      {
+        name: 'update_application_env',
+        description: 'Update an existing environment variable for an application. This modifies the value or settings of an existing environment variable.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            application_uuid: {
+              type: 'string',
+              description: 'UUID of the application containing the environment variable.',
+            },
+            env_uuid: {
+              type: 'string',
+              description: 'UUID of the environment variable to update. Get this from list_application_envs.',
+            },
+            key: {
+              type: 'string',
+              description: 'New environment variable name (optional if only updating value).',
+            },
+            value: {
+              type: 'string',
+              description: 'New environment variable value (optional if only updating other properties).',
+            },
+            is_build_time: {
+              type: 'boolean',
+              description: 'Whether this variable should be available during build time.',
+            },
+            is_preview: {
+              type: 'boolean',
+              description: 'Whether this variable applies to preview deployments.',
+            },
+            is_literal: {
+              type: 'boolean',
+              description: 'Whether the value should be treated as a literal string without variable substitution.',
+            },
+          },
+          required: ['application_uuid', 'env_uuid'],
+        },
+      },
+      {
+        name: 'bulk_update_application_envs',
+        description: 'Update multiple environment variables for an application in a single operation. Efficient for updating many variables at once.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            uuid: {
+              type: 'string',
+              description: 'UUID of the application to update environment variables for.',
+            },
+            envs: {
+              type: 'array',
+              description: 'Array of environment variables to update or create.',
+              items: {
+                type: 'object',
+                properties: {
+                  uuid: {
+                    type: 'string',
+                    description: 'UUID of existing environment variable (omit to create new).',
+                  },
+                  key: {
+                    type: 'string',
+                    description: 'Environment variable name.',
+                  },
+                  value: {
+                    type: 'string',
+                    description: 'Environment variable value.',
+                  },
+                  is_build_time: {
+                    type: 'boolean',
+                    description: 'Whether this variable should be available during build time.',
+                  },
+                  is_preview: {
+                    type: 'boolean',
+                    description: 'Whether this variable applies to preview deployments.',
+                  },
+                  is_literal: {
+                    type: 'boolean',
+                    description: 'Whether the value should be treated as a literal string.',
+                  },
+                },
+                required: ['key', 'value'],
+              },
+            },
+          },
+          required: ['uuid', 'envs'],
+        },
+      },
+      {
+        name: 'delete_application_env',
+        description: 'Delete an environment variable from an application. This permanently removes the environment variable.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            application_uuid: {
+              type: 'string',
+              description: 'UUID of the application containing the environment variable.',
+            },
+            env_uuid: {
+              type: 'string',
+              description: 'UUID of the environment variable to delete. Get this from list_application_envs.',
+            },
+          },
+          required: ['application_uuid', 'env_uuid'],
+        },
+      },
+      // Service Environment Variables
+      {
+        name: 'list_service_envs',
+        description: 'List all environment variables for a specific service. Use this to view current environment configuration.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            uuid: {
+              type: 'string',
+              description: 'UUID of the service to list environment variables for. Get this from list_services.',
+            },
+          },
+          required: ['uuid'],
+        },
+      },
+      {
+        name: 'create_service_env',
+        description: 'Create a new environment variable for a service. This adds a new key-value pair to the service\'s environment. Note: Setting is_build_time=true has no functional effect on services (they use pre-built images).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            uuid: {
+              type: 'string',
+              description: 'UUID of the service to add the environment variable to.',
+            },
+            key: {
+              type: 'string',
+              description: 'Environment variable name (e.g., "DATABASE_URL", "REDIS_HOST").',
+            },
+            value: {
+              type: 'string',
+              description: 'Environment variable value.',
+            },
+            is_build_time: {
+              type: 'boolean',
+              description: 'Whether this variable should be available during build time. Note: Has no functional effect on services (they use pre-built images).',
+            },
+            is_preview: {
+              type: 'boolean',
+              description: 'Whether this variable applies to preview deployments.',
+            },
+            is_literal: {
+              type: 'boolean',
+              description: 'Whether the value should be treated as a literal string without variable substitution.',
+            },
+          },
+          required: ['uuid', 'key', 'value'],
+        },
+      },
+      {
+        name: 'update_service_env',
+        description: 'Update an existing environment variable for a service. This modifies the value or settings of an existing environment variable. Note: Setting is_build_time=true has no functional effect on services (they use pre-built images).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            service_uuid: {
+              type: 'string',
+              description: 'UUID of the service containing the environment variable.',
+            },
+            key: {
+              type: 'string',
+              description: 'Environment variable name to update.',
+            },
+            value: {
+              type: 'string',
+              description: 'New environment variable value.',
+            },
+            is_build_time: {
+              type: 'boolean',
+              description: 'Whether this variable should be available during build time. Note: Has no functional effect on services (they use pre-built images).',
+            },
+            is_preview: {
+              type: 'boolean',
+              description: 'Whether this variable applies to preview deployments.',
+            },
+            is_literal: {
+              type: 'boolean',
+              description: 'Whether the value should be treated as a literal string without variable substitution.',
+            },
+          },
+          required: ['service_uuid', 'key', 'value'],
+        },
+      },
+      {
+        name: 'bulk_update_service_envs',
+        description: 'Update multiple environment variables for a service in a single operation. Efficient for updating many variables at once. Note: Setting is_build_time=true has no functional effect on services (they use pre-built images).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            uuid: {
+              type: 'string',
+              description: 'UUID of the service to update environment variables for.',
+            },
+            data: {
+              type: 'array',
+              description: 'Array of environment variables to update or create.',
+              items: {
+                type: 'object',
+                properties: {
+                  key: {
+                    type: 'string',
+                    description: 'Environment variable name.',
+                  },
+                  value: {
+                    type: 'string',
+                    description: 'Environment variable value.',
+                  },
+                  is_build_time: {
+                    type: 'boolean',
+                    description: 'Whether this variable should be available during build time. Note: Has no functional effect on services (they use pre-built images).',
+                  },
+                  is_preview: {
+                    type: 'boolean',
+                    description: 'Whether this variable applies to preview deployments.',
+                  },
+                  is_literal: {
+                    type: 'boolean',
+                    description: 'Whether the value should be treated as a literal string.',
+                  },
+                },
+                required: ['key', 'value'],
+              },
+            },
+          },
+          required: ['uuid', 'data'],
+        },
+      },
+      {
+        name: 'delete_service_env',
+        description: 'Delete an environment variable from a service. This permanently removes the environment variable.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            service_uuid: {
+              type: 'string',
+              description: 'UUID of the service containing the environment variable.',
+            },
+            env_uuid: {
+              type: 'string',
+              description: 'UUID of the environment variable to delete. Get this from list_service_envs.',
+            },
+          },
+          required: ['service_uuid', 'env_uuid'],
         },
       },
     ];

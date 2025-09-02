@@ -150,9 +150,6 @@ export class CoolifyClient {
     return this.post(`/applications/${uuid}/restart`);
   }
 
-  async executeCommandApplication(uuid: string, command: string): Promise<any> {
-    return this.post(`/applications/${uuid}/command`, { command });
-  }
 
   // Services endpoints
   async listServices(): Promise<any[]> {
@@ -206,5 +203,91 @@ export class CoolifyClient {
     description?: string;
   }): Promise<any> {
     return this.post('/private-keys', keyData);
+  }
+
+  // Environment Variables endpoints for Applications
+  async listApplicationEnvs(uuid: string): Promise<any[]> {
+    return this.get(`/applications/${uuid}/envs`);
+  }
+
+  async createApplicationEnv(uuid: string, envData: {
+    key: string;
+    value: string;
+    is_build_time?: boolean;
+    is_preview?: boolean;
+    is_literal?: boolean;
+  }): Promise<any> {
+    return this.post(`/applications/${uuid}/envs`, envData);
+  }
+
+  async updateApplicationEnv(uuid: string, envData: {
+    uuid: string;
+    key?: string;
+    value?: string;
+    is_build_time?: boolean;
+    is_preview?: boolean;
+    is_literal?: boolean;
+  }): Promise<any> {
+    // CORRECTED: Use /applications/{uuid}/envs and send key+value in body
+    const { uuid: envUuid, ...updateData } = envData;
+    return this.patch(`/applications/${uuid}/envs`, updateData);
+  }
+
+  async bulkUpdateApplicationEnvs(uuid: string, envs: Array<{
+    uuid?: string;
+    key: string;
+    value: string;
+    is_build_time?: boolean;
+    is_preview?: boolean;
+    is_literal?: boolean;
+  }>): Promise<any> {
+    // CORRECTED: Use official API format with "data" wrapper
+    return this.patch(`/applications/${uuid}/envs/bulk`, { data: envs });
+  }
+
+  async deleteApplicationEnv(applicationUuid: string, envUuid: string): Promise<any> {
+    return this.delete(`/applications/${applicationUuid}/envs/${envUuid}`);
+  }
+
+  // Environment Variables endpoints for Services
+  async listServiceEnvs(uuid: string): Promise<any[]> {
+    return this.get(`/services/${uuid}/envs`);
+  }
+
+  async createServiceEnv(uuid: string, envData: {
+    key: string;
+    value: string;
+    is_build_time?: boolean;
+    is_preview?: boolean;
+    is_literal?: boolean;
+  }): Promise<any> {
+    return this.post(`/services/${uuid}/envs`, envData);
+  }
+
+  async updateServiceEnv(uuid: string, envData: {
+    key: string;
+    value: string;
+    is_build_time?: boolean;
+    is_preview?: boolean;
+    is_literal?: boolean;
+  }): Promise<any> {
+    // FIXED: Match official API - send key+value directly to /services/{uuid}/envs
+    return this.patch(`/services/${uuid}/envs`, envData);
+  }
+
+  async bulkUpdateServiceEnvs(uuid: string, envs: Array<{
+    uuid?: string;
+    key: string;
+    value: string;
+    is_build_time?: boolean;
+    is_preview?: boolean;
+    is_literal?: boolean;
+  }>): Promise<any> {
+    // CORRECTED: Use official API format with "data" wrapper
+    return this.patch(`/services/${uuid}/envs/bulk`, { data: envs });
+  }
+
+  async deleteServiceEnv(serviceUuid: string, envUuid: string): Promise<any> {
+    return this.delete(`/services/${serviceUuid}/envs/${envUuid}`);
   }
 }
